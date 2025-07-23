@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultDesk: Biometric-Secured Worker Support Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .neon-effect {
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+        }
+        
+        .floating {
+            animation: floating 1s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .vault-item {
+            transition: all 0.3s ease;
+        }
+        
+        .vault-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .dark\:bg-dark {
+            background-color: var(--dark);
+            color: var(--light);
+        }
+        
+        .dark .dark\:glassmorphism {
+            background: rgba(30, 41, 59, 0.5);
+        }
+        
+        .page-transition {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .biometric-btn {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            transition: all 0.3s ease;
+        }
+        
+        .biometric-btn:hover {
+            transform: rotateY(10deg);
+        }
+        
+        .avatar-circle {
+            clip-path: circle(50% at 50% 50%);
+        }
+    </style>
+</head>
+<body class="dark:bg-dark transition-colors duration-300">
+    <div class="fixed top-5 right-5 z-50">
+        <button id="theme-toggle" class="bg-white dark:bg-slate-800 text-gray-800 dark:text-white p-2 rounded-full shadow-lg">
+            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </button>
+    </div>
+
+    <div id="auth-modal" class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 glassmorphism relative overflow-hidden">
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-purple-500 rounded-full opacity-10"></div>
+            <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-500 rounded-full opacity-10"></div>
+            
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 dark:text-white">KhingDesk</h2>
+                <p class="text-gray-600 dark:text-gray-300 mt-2">Biometric-Secured Worker Portal</p>
+            </div>
+            
+            <div class="flex flex-col space-y-4">
+                <div class="floating">
+                    <img src="Gold.jpg" alt="Abstract vault door with digital lock and biometric scanner" class="w-40 h-40 mx-auto rounded-full avatar-circle neon-effect">
+                </div>
+                
+                <p class="text-center text-gray-600 dark:text-gray-300">Authenticate to access your secure vault</p>
+                
+                <button id="biometric-auth" class="biometric-btn bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 px-6 rounded-full font-medium mt-4 flex items-center justify-center space-x-2 neon-effect hover:from-indigo-600 hover:to-purple-700 transition-all duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07m3 3.186A7.989 7.989 0 0116 12c0 .665-.07 1.314-.203 1.936M6.228 6.228A15.98 15.98 0 0112 6c3.337 0 6.379 1.255 8.65 3.316m-4.345 8.49a9 9 0 01-4.02-7.039l1.267-1.268M6 6.02a15.978 15.978 0 01-.832 2.449m10.723 5.002a15.981 15.981 0 01-.41 2.446M6.228 6.228l2.448 2.448M17.18 17.18l-2.427-2.427" />
+                    </svg>
+                    <span>Use Biometric Authentication</span>
+                </button>
+                
+                <div id="user-select" class="mt-4">
+                    <label for="users" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select User</label>
+                    <select id="users" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                        <option value="" disabled selected>Select your profile</option>
+                        <option value="cyrus">Cyrus Aziliko - ICT</option>
+                        <option value="emmanuella">Emmanuella Mensah - Health</option>
+                        <option value="Uriel">Uriel Aziliko - Engineering</option>
+                        <option value="Zipporah">Zipporah Aziliko - Admin</option>
+                        <option value="Peter">Peter Aziliko - Security</option>
+                        <option value="cecilia">Cecilia Tenkorang - Legal</option>
+                        <option value="akosua">Akosua Brempomaa - Accounts</option>
+                        <option value="goldstreet">Goldstreet Aziliko - Logistics</option>
+
+                     </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-content" class="hidden page-transition">
+        <!-- Floating Navigation -->
+        <nav class="fixed bottom-5 right-5 z-40">
+            <div class="flex flex-col items-center space-y-3">
+                <button id="toggle-vault" class="floating bg-indigo-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all neon-effect">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </button>
+                
+                <button id="toggle-helpdesk" class="floating bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-purple-700 transition-all neon-effect">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                </button>
+                
+                <button id="logout-btn" class="floating bg-red-500 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-red-600 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- User Dashboard -->
+        <div id="user-dashboard" class="container mx-auto px-4 py-8">
+            <!-- User Profile Header -->
+            <div class="flex flex-col md:flex-row items-center justify-between mb-8">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <img id="user-avatar" src="https://placehold.co/150x150" alt="" class="w-20 h-20 rounded-full shadow-md avatar-circle neon-effect">
+                        <div id="auth-indicator" class="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div>
+                        <h1 id="user-name" class="text-2xl font-bold text-gray-800 dark:text-white"></h1>
+                        <p id="user-dept" class="text-gray-600 dark:text-gray-300"></p>
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <div class="px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 rounded-full text-indigo-800 dark:text-indigo-200 font-medium neon-effect">
+                        <span id="welcome-message">Welcome back!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vault Section -->
+            <div id="vault-section" class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">My Secure Vault</h2>
+                    <button id="add-vault-item" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Vault items will be populated here -->
+                </div>
+            </div>
+
+            <!-- Help Desk Section -->
+            <div id="helpdesk-section" class="hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Help Desk</h2>
+                </div>
+                
+                <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md p-6 mb-6 glassmorphism">
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-4">Submit New Request</h3>
+                    <form id="ticket-form">
+                        <div class="mb-4">
+                            <label for="ticket-subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject</label>
+                            <input type="text" id="ticket-subject" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="What's the issue?" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="ticket-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                            <textarea id="ticket-description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Provide more details about your issue..." required></textarea>
+                        </div>
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-6 rounded-lg font-medium transition-colors neon-effect">
+                            Submit Ticket
+                        </button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-4">My Tickets</h3>
+                    <div id="ticket-list" class="space-y-4">
+                        <!-- Tickets will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Vault Item Modal -->
+    <div id="add-item-modal" class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4 glassmorphism">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Add New Vault Item</h3>
+            
+            <form id="add-item-form">
+                <div class="mb-4">
+                    <label for="item-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item Name</label>
+                    <input type="text" id="item-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Name of the item" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Item Type</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <input type="radio" id="type-credential" name="item-type" value="credential" class="hidden peer" checked>
+                            <label for="type-credential" class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:peer-checked:bg-slate-700 dark:peer-checked:border-indigo-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                Credential
+                            </label>
+                        </div>
+                        <div>
+                            <input type="radio" id="type-document" name="item-type" value="document" class="hidden peer">
+                            <label for="type-document" class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:peer-checked:bg-slate-700 dark:peer-checked:border-indigo-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Document
+                            </label>
+                        </div>
+                        <div>
+                            <input type="radio" id="type-note" name="item-type" value="note" class="hidden peer">
+                            <label for="type-note" class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:peer-checked:bg-slate-700 dark:peer-checked:border-indigo-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Note
+                            </label>
+                        </div>
+                        <div>
+                            <input type="radio" id="type-link" name="item-type" value="link" class="hidden peer">
+                            <label for="type-link" class="flex items-center justify-center p-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:peer-checked:bg-slate-700 dark:peer-checked:border-indigo-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                                Link
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="credential-fields" class="space-y-4">
+                    <div>
+                        <label for="item-username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                        <input type="text" id="item-username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Enter username">
+                    </div>
+                    <div>
+                        <label for="item-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                        <input type="password" id="item-password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Enter password">
+                    </div>
+                    <div>
+                        <label for="item-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Website URL</label>
+                        <input type="url" id="item-url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="https://">
+                    </div>
+                </div>
+                
+                <div id="document-fields" class="hidden space-y-4">
+                    <div>
+                        <label for="item-file" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload File</label>
+                        <div class="flex items-center justify-center w-full">
+                            <label for="item-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.136 5.017 5.068 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                    </svg>
+                                    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX, XLSX, PPTX</p>
+                                </div>
+                                <input id="item-file" type="file" class="hidden" />
+                            </label>
+                        </div> 
+                    </div>
+                    <div>
+                        <label for="item-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                        <textarea id="item-description" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Description of the document"></textarea>
+                    </div>
+                </div>
+                
+                <div id="note-fields" class="hidden">
+                    <div>
+                        <label for="item-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
+                        <textarea id="item-content" rows="4" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Write your note here..."></textarea>
+                    </div>
+                </div>
+                
+                <div id="link-fields" class="hidden">
+                    <div>
+                        <label for="item-link" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">URL</label>
+                        <input type="url" id="item-link" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="https://">
+                    </div>
+                    <div class="mt-4">
+                        <label for="item-link-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description (optional)</label>
+                        <input type="text" id="item-link-description" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Brief description">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" id="cancel-add-item" class="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors neon-effect">
+                        Add Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Vault Item Modal -->
+    <div id="view-item-modal" class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4 glassmorphism">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="item-modal-title" class="text-xl font-semibold text-gray-800 dark:text-white"></h3>
+                <button type="button" id="close-view-item" class="text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="item-modal-content" class="space-y-4">
+                <!-- Item content will be populated here -->
+            </div>
+            
+            <div class="flex justify-end mt-6">
+                <button type="button" id="delete-item-btn" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 px-4 py-2 rounded-lg border border-red-200 dark:border-red-800 transition-colors flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for demo purposes
+        const users = {
+            cyrus: {
+                name: "Cyrus Aziliko",
+                dept: "ICT Department",
+                avatar: "cyrus.jpg",
+                welcomeMessage: "Hello, ICT Specialist!",
+                vaultItems: [
+                    { id: 1, name: "Admin Dashboard", type: "credential", username: "caziliko", password: "********", url: "https://admin.example.com" },
+                    { id: 2, name: "VPN Credentials", type: "credential", username: "cyrus_a", password: "********", url: "https://vpn.example.com" },
+                    { id: 3, name: "Server Documentation", type: "document", description: "Server configurations and access details", file: "server-docs.pdf" },
+                    { id: 4, name: "Important Notes", type: "note", content: "Remember to update firewall rules every Friday" }
+                ],
+                tickets: [
+                    { id: 1, subject: "VPN not connecting", description: "Unable to connect to the corporate VPN since yesterday", status: "resolved", date: "2023-05-15" },
+                    { id: 2, subject: "New laptop request", description: "Need a new laptop for the junior developer", status: "pending", date: "2023-06-02" }
+                ]
+            },
+            emmanuella: {
+                name: "Emmanuella Mensah",
+                dept: "Health Department",
+                avatar: "Ella.jpg",
+                welcomeMessage: "Welcome back, Nurse!",
+                vaultItems: [
+                    { id: 1, name: "Medical Portal", type: "credential", username: "emensah", password: "********", url: "https://medical.example.com" },
+                    { id: 2, name: "HIPAA Guidelines", type: "document", description: "Latest HIPAA compliance documentation", file: "hipaa-2023.pdf" },
+                    { id: 3, name: "Patient Notes", type: "note", content: "Important updates on patient cases for June" }
+                ],
+                tickets: [
+                    { id: 1, subject: "System downtime", description: "Electronic health records system was down for 30 minutes", status: "resolved", date: "2023-05-20" },
+                    { id: 2, subject: "Access request", description: "Need access to pediatric records system", status: "processing", date: "2023-06-01" }
+                ]
+            },
+            Uriel: {
+                name: "Uriel Aziliko",
+                dept: "Engineering Department",
+                avatar: "zo.jpg",
+                welcomeMessage: "Hey Engineer, ready for today?",
+                vaultItems: [
+                    { id: 1, name: "CAD Software", type: "credential", username: "Zowini", password: "********", url: "https://cad.example.com" },
+                    { id: 2, name: "Project Blueprints", type: "document", description: "Latest project blueprints for review", file: "blueprint-2023.zip" },
+                    { id: 3, name: "Meeting Notes", type: "note", content: "Action items from last engineering meeting" },
+                    { id: 4, name: "Supplier Portal", type: "credential", username: "engineer_12", password: "********", url: "https://suppliers.example.com" }
+                ],
+                tickets: [
+                    { id: 1, subject: "Printer issue", description: "Printer in engineering dept is jammed", status: "resolved", date: "2023-05-18" },
+                    { id: 2, subject: "Software license", description: "Need renewal for AutoCAD license", status: "processing", date: "2023-06-05" }
+                ]
+            },
+            Zipporah: {
+                name: "Zipporah Aziliko",
+                dept: "Administration",
+                avatar: "zii.jpg",
+                welcomeMessage: "Good day, Administrator!",
+                vaultItems: [
+                    { id: 1, name: "Payroll System", type: "credential", username: "Suguri", password: "********", url: "https://payroll.example.com" },
+                    { id: 2, name: "HR Policies", type: "document", description: "Updated HR policies effective June 2023", file: "hr-policies-2023.pdf" },
+                    { id: 3, name: "Meeting Links", type: "link", url: "https://meet.example.com/annual-review", description: "Monthly leadership team meeting" }
+                ],
+                tickets: [
+                    { id: 1, subject: "Calendar sync issue", description: "Outlook calendar not syncing with phone", status: "resolved", date: "2023-05-22" },
+                    { id: 2, subject: "Invoices", description: "Need help with invoice processing system", status: "open", date: "2023-06-03" }
+                ]
+            },
+            
+        cecilia: {
+            name: "Cecilia Tenkorang",
+            dept: "Legal Department",
+            avatar: "ceci.jpg",
+            welcomeMessage: "Greetings, Legal Counsel!",
+            vaultItems: [
+                { id: 1, name: "Case Management System", type: "credential", username: "cecilia_law", password: "********", url: "https://legal.example.com" },
+                { id: 2, name: "Legal Templates", type: "document", description: "Contracts and agreements", file: "legal-templates.zip" },
+                { id: 3, name: "Pending Reviews", type: "note", content: "Review supplier contract terms by Friday" }
+            ],
+            tickets: [
+                { id: 1, subject: "Access to archived contracts", description: "Need access to archived legal files from 2022", status: "open", date: "2023-06-20" },
+                { id: 2, subject: "PDF editor license", description: "Requesting license for legal PDF editor", status: "processing", date: "2023-07-01" }
+            ]
+        },
+        akosua: {
+            name: "Akosua Brempomaa",
+            dept: "Accounts Department",
+            avatar: "akosua.jpg",
+            welcomeMessage: "Hello Akosua, time to balance the books!",
+            vaultItems: [
+                     { id: 1, name: "Payroll Login", type: "credential", username: "akosua_acc", password: "********", url: "https://payroll.example.com" },
+                     { id: 2, name: "Monthly Reports", type: "document", description: "Accounts summary for Q2", file: "q2-reports.pdf" },
+                     { id: 3, name: "Tax Reminder", type: "note", content: "File tax forms before 25th of the month" }
+            ],
+            tickets: [
+                { id: 1, subject: "Error in payroll sheet", description: "Incorrect deductions showing for July", status: "open", date: "2023-07-10" }
+            ]
+        },
+        goldstreet: {
+            name: "Goldstreet Aziliko",
+            dept: "Logistics",
+            avatar: "golda.jpg",
+            welcomeMessage: "Welcome, Logistics Lead!",
+            vaultItems: [
+                      { id: 1, name: "Warehouse Portal", type: "credential", username: "gstreet", password: "********", url: "https://logistics.example.com" },
+                      { id: 2, name: "Delivery Schedules", type: "document", description: "Routes and drop-offs for July", file: "schedule-july.pdf" },
+                      { id: 3, name: "Fleet Checklist", type: "note", content: "Inspect trucks weekly and update form" },
+                      { id: 4, name: "Tracking Link", type: "link", url: "https://track.example.com", description: "Real-time fleet tracker" }
+            ],
+            tickets: [
+                      { id: 1, subject: "Fuel card issue", description: "Card not working at partner station", status: "processing", date: "2023-07-12" },
+                      { id: 2, subject: "Late deliveries", description: "Concern about delay due to software syncing", status: "open", date: "2023-07-13" }
+            ]
+        },
+        Peter: {
+                name: "Peter Aziliko",
+                dept: "Security Department",
+                avatar: "dad.jpg",
+                welcomeMessage: "Security matters! Stay vigilant.",
+                vaultItems: [
+                    { id: 1, name: "Surveillance System", type: "credential", username: "Peter", password: "********", url: "https://cctv.example.com" },
+                    { id: 2, name: "Incident Reports", type: "document", description: "Monthly security incident reports", file: "incidents-may-2023.pdf" },
+                    { id: 3, name: "Access Codes", type: "note", content: "Updated door access codes for June" }
+                ],
+                tickets: [
+                    { id: 1, subject: "Badge reader malfunction", description: "Badge reader at east entrance not working", status: "resolved", date: "2023-05-25" },
+                    { id: 2, subject: "Camera offline", description: "Camera #12 in parking lot is offline", status: "open", date: "2023-06-04" }
+                ]
+            }
+        };
+
+        // Current user data
+        let currentUser = null;
+
+        // DOM Elements
+        const authModal = document.getElementById('auth-modal');
+        const appContent = document.getElementById('app-content');
+        const userSelect = document.getElementById('users');
+        const biometricAuthBtn = document.getElementById('biometric-auth');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userDashboard = document.getElementById('user-dashboard');
+        const userName = document.getElementById('user-name');
+        const userDept = document.getElementById('user-dept');
+        const userAvatar = document.getElementById('user-avatar');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const vaultSection = document.querySelector('#vault-section .grid');
+        const helpdeskSection = document.getElementById('helpdesk-section');
+        const ticketForm = document.getElementById('ticket-form');
+        const ticketList = document.getElementById('ticket-list');
+        const ticketSubject = document.getElementById('ticket-subject');
+        const ticketDescription = document.getElementById('ticket-description');
+        const toggleVaultBtn = document.getElementById('toggle-vault');
+        const toggleHelpdeskBtn = document.getElementById('toggle-helpdesk');
+        const addVaultItemBtn = document.getElementById('add-vault-item');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const addItemModal = document.getElementById('add-item-modal');
+        const addItemForm = document.getElementById('add-item-form');
+        const cancelAddItemBtn = document.getElementById('cancel-add-item');
+        const itemTypes = document.querySelectorAll('input[name="item-type"]');
+        const credentialFields = document.getElementById('credential-fields');
+        const documentFields = document.getElementById('document-fields');
+        const noteFields = document.getElementById('note-fields');
+        const linkFields = document.getElementById('link-fields');
+        const viewItemModal = document.getElementById('view-item-modal');
+        const closeViewItemBtn = document.getElementById('close-view-item');
+        const deleteItemBtn = document.getElementById('delete-item-btn');
+        const itemModalTitle = document.getElementById('item-modal-title');
+        const itemModalContent = document.getElementById('item-modal-content');
+        const authIndicator = document.getElementById('auth-indicator');
+
+        // Event Listeners
+        biometricAuthBtn.addEventListener('click', authenticateUser);
+        userSelect.addEventListener('change', selectUser);
+        logoutBtn.addEventListener('click', logout);
+        ticketForm.addEventListener('submit', submitTicket);
+        toggleVaultBtn.addEventListener('click', () => toggleSection('vault'));
+        toggleHelpdeskBtn.addEventListener('click', () => toggleSection('helpdesk'));
+        addVaultItemBtn.addEventListener('click', () => addItemModal.classList.remove('hidden'));
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        cancelAddItemBtn.addEventListener('click', () => addItemModal.classList.add('hidden'));
+        closeViewItemBtn.addEventListener('click', () => viewItemModal.classList.add('hidden'));
+        deleteItemBtn.addEventListener('click', deleteItem);
+
+        // Handle item type selection changes
+        itemTypes.forEach(type => {
+            type.addEventListener('change', function() {
+                credentialFields.classList.add('hidden');
+                documentFields.classList.add('hidden');
+                noteFields.classList.add('hidden');
+                linkFields.classList.add('hidden');
+                
+                if (this.value === 'credential') {
+                    credentialFields.classList.remove('hidden');
+                } else if (this.value === 'document') {
+                    documentFields.classList.remove('hidden');
+                } else if (this.value === 'note') {
+                    noteFields.classList.remove('hidden');
+                } else if (this.value === 'link') {
+                    linkFields.classList.remove('hidden');
+                }
+            });
+        });
+
+        // Form submission for adding new vault item
+        addItemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const itemName = document.getElementById('item-name').value;
+            const itemType = document.querySelector('input[name="item-type"]:checked').value;
+            let newItem = { id: Date.now(), name: itemName, type: itemType };
+            
+            if (itemType === 'credential') {
+                newItem.username = document.getElementById('item-username').value;
+                newItem.password = document.getElementById('item-password').value;
+                newItem.url = document.getElementById('item-url').value;
+            } else if (itemType === 'document') {
+                newItem.description = document.getElementById('item-description').value;
+                newItem.file = document.getElementById('item-file').files[0] ? document.getElementById('item-file').files[0].name : 'uploaded_file.pdf';
+            } else if (itemType === 'note') {
+                newItem.content = document.getElementById('item-content').value;
+            } else if (itemType === 'link') {
+                newItem.url = document.getElementById('item-link').value;
+                newItem.description = document.getElementById('item-link-description').value;
+            }
+            
+            currentUser.vaultItems.push(newItem);
+            renderVaultItems();
+            addItemModal.classList.add('hidden');
+            addItemForm.reset();
+        });
+
+        // Functions
+        function authenticateUser() {
+            const selectedUser = userSelect.value;
+            if (!selectedUser) {
+                alert('Please select a user first');
+                return;
+            }
+
+            // Simulate biometric authentication
+            authIndicator.classList.replace('bg-green-500', 'bg-yellow-500');
+            
+            setTimeout(() => {
+                authIndicator.classList.replace('bg-yellow-500', 'bg-green-500');
+                
+                // Set current user data
+                currentUser = users[selectedUser];
+                
+                // Update UI with user data
+                userName.textContent = currentUser.name;
+                userDept.textContent = currentUser.dept;
+                userAvatar.src = currentUser.avatar;
+                userAvatar.alt = `Profile photo of ${currentUser.name}`;
+                welcomeMessage.textContent = currentUser.welcomeMessage;
+                
+                // Hide auth modal and show app content
+                authModal.classList.add('hidden');
+                appContent.classList.remove('hidden');
+                
+                // Render vault items and tickets
+                renderVaultItems();
+                renderTickets();
+                
+                // Show welcome notification
+                showNotification(`Welcome, ${currentUser.name}!`);
+                
+                // Set user-specific avatar alt text
+                userAvatar.alt = `Profile of ${currentUser.name}, ${currentUser.dept}`;
+            }, 1500);
+        }
+
+        function selectUser() {
+            const selectedUser = userSelect.value;
+            if (selectedUser) {
+                biometricAuthBtn.disabled = false;
+                biometricAuthBtn.classList.remove('opacity-50');
+                
+                // Update avatar preview
+                const avatarPreview = document.querySelector('.floating img');
+                avatarPreview.src = users[selectedUser].avatar;
+                avatarPreview.alt = `Profile photo preview for ${users[selectedUser].name}`;
+            } else {
+                biometricAuthBtn.disabled = true;
+                biometricAuthBtn.classList.add('opacity-50');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            appContent.classList.add('hidden');
+            authModal.classList.remove('hidden');
+            helpdeskSection.classList.add('hidden');
+            addItemModal.classList.add('hidden');
+            viewItemModal.classList.add('hidden');
+            
+            // Clear form
+            ticketForm.reset();
+            addItemForm.reset();
+            
+            // Reset user select
+            userSelect.value = '';
+            
+            showNotification('You have been logged out securely');
+        }
+
+        function toggleSection(section) {
+            if (section === 'vault') {
+                helpdeskSection.classList.add('hidden');
+                toggleHelpdeskBtn.classList.remove('bg-purple-700', 'dark:bg-purple-800');
+                toggleHelpdeskBtn.classList.add('bg-purple-600', 'dark:bg-purple-600');
+                
+                toggleVaultBtn.classList.remove('bg-indigo-600', 'dark:bg-indigo-600');
+                toggleVaultBtn.classList.add('bg-indigo-700', 'dark:bg-indigo-800');
+            } else if (section === 'helpdesk') {
+                helpdeskSection.classList.remove('hidden');
+                toggleVaultBtn.classList.remove('bg-indigo-700', 'dark:bg-indigo-800');
+                toggleVaultBtn.classList.add('bg-indigo-600', 'dark:bg-indigo-600');
+                
+                toggleHelpdeskBtn.classList.remove('bg-purple-600', 'dark:bg-purple-600');
+                toggleHelpdeskBtn.classList.add('bg-purple-700', 'dark:bg-purple-800');
+            }
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            
+            if (document.documentElement.classList.contains('dark')) {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                moonIcon.classList.add('hidden');
+                sunIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function renderVaultItems() {
+            vaultSection.innerHTML = '';
+            
+            currentUser.vaultItems.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'vault-item bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow';
+                itemElement.dataset.id = item.id;
+                
+                let icon, content;
+                
+                if (item.type === 'credential') {
+                    icon = `<div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600 dark:text-indigo-300 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>`;
+                    content = `<h3 class="font-medium text-gray-800 dark:text-white">${item.name}</h3>
+                              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${item.username}</p>
+                              <p class="text-xs text-indigo-500 dark:text-indigo-400 mt-2 truncate">${item.url}</p>`;
+                } else if (item.type === 'document') {
+                    icon = `<div class="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900 flex items-center justify-center text-purple-600 dark:text-purple-300 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>`;
+                    content = `<h3 class="font-medium text-gray-800 dark:text-white">${item.name}</h3>
+                              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${item.file}</p>
+                              <p class="text-xs text-purple-500 dark:text-purple-400 mt-2 truncate">${item.description}</p>`;
+                } else if (item.type === 'note') {
+                    icon = `<div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-600 dark:text-green-300 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </div>`;
+                    content = `<h3 class="font-medium text-gray-800 dark:text-white">${item.name}</h3>
+                              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${item.content.substring(0, 50)}...</p>`;
+                } else if (item.type === 'link') {
+                    icon = `<div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                            </div>`;
+                    content = `<h3 class="font-medium text-gray-800 dark:text-white">${item.name}</h3>
+                              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${item.description || 'No description'}</p>
+                              <p class="text-xs text-blue-500 dark:text-blue-400 mt-2 truncate">${item.url}</p>`;
+                }
+                
+                itemElement.innerHTML = `
+                    ${icon}
+                    ${content}
+                    <div class="flex justify-end mt-3">
+                        <button class="view-item-btn text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
+                            View Details
+                        </button>
+                    </div>
+                `;
+                
+                vaultSection.appendChild(itemElement);
+            });
+            
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-item-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = parseInt(this.closest('.vault-item').dataset.id);
+                    viewItem(itemId);
+                });
+            });
+        }
+
+        function viewItem(itemId) {
+            const item = currentUser.vaultItems.find(i => i.id === itemId);
+            if (!item) return;
+            
+            itemModalTitle.textContent = item.name;
+            let content = '';
+            
+            if (item.type === 'credential') {
+                content = `
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                            <div class="flex items-center bg-gray-100 dark:bg-slate-700 p-2 rounded">
+                                <span>${item.username}</span>
+                                <button class="copy-btn ml-auto" data-value="${item.username}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                            <div class="flex items-center bg-gray-100 dark:bg-slate-700 p-2 rounded">
+                                <span>${item.password}</span>
+                                <button class="copy-btn ml-auto" data-value="${item.password}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Website URL</label>
+                            <div class="flex items-center bg-gray-100 dark:bg-slate-700 p-2 rounded">
+                                <a href="${item.url}" target="_blank" class="text-indigo-600 dark:text-indigo-400 hover:underline">${item.url}</a>
+                                <button class="copy-btn ml-auto" data-value="${item.url}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'document') {
+                content = `
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">File Name</label>
+                            <div class="flex items-center bg-gray-100 dark:bg-slate-700 p-2 rounded">
+                                <span>${item.file}</span>
+                                <button class="download-btn ml-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                            <div class="bg-gray-100 dark:bg-slate-700 p-2 rounded">
+                                <p>${item.description}</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Date</label>
+                            <div class="bg-gray-100 dark:bg-slate-700 p-2 rounded">
+                                <p>${new Date().toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.type === 'note') {
+                content = `
+                    <div class="bg-gray-100 dark:bg-slate-700 p-4 rounded">
+                        <p class="whitespace-pre-line">${item.content}</p>
+                    </div>
+                    <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                        Last updated: ${new Date().toLocaleDateString()}
+                    </div>
+                `;
+            } else if (item.type === 'link') {
+                content = `
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL</label>
+                            <div class="flex items-center bg-gray-100 dark:bg-slate-700 p-2 rounded">
+                                <a href="${item.url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${item.url}</a>
+                                <button class="copy-btn ml-auto" data-value="${item.url}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                            <div class="bg-gray-100 dark:bg-slate-700 p-2 rounded">
+                                <p>${item.description || 'No description provided'}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            itemModalContent.innerHTML = content;
+            
+            // Add event listeners to copy buttons
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const value = this.dataset.value;
+                    navigator.clipboard.writeText(value);
+                    showNotification('Copied to clipboard');
+                });
+            });
+            
+            // Set delete button data-id
+            deleteItemBtn.dataset.id = itemId;
+            
+            viewItemModal.classList.remove('hidden');
+        }
+
+        function deleteItem() {
+            const itemId = parseInt(this.dataset.id);
+            currentUser.vaultItems = currentUser.vaultItems.filter(item => item.id !== itemId);
+            
+            renderVaultItems();
+            viewItemModal.classList.add('hidden');
+            
+            showNotification('Item deleted successfully');
+        }
+
+        function renderTickets() {
+            ticketList.innerHTML = '';
+            
+            currentUser.tickets.forEach(ticket => {
+                const ticketElement = document.createElement('div');
+                ticketElement.className = 'bg-white dark:bg-slate-800 rounded-lg shadow p-4 vault-item';
+                
+                let statusClass = '';
+                if (ticket.status === 'resolved') statusClass = 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+                else if (ticket.status === 'processing') statusClass = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
+                else statusClass = 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+                
+                ticketElement.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-medium text-gray-800 dark:text-white">${ticket.subject}</h3>
+                        <span class="text-xs px-2 py-1 rounded-full ${statusClass}">${ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1)}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">${ticket.description}</p>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">${ticket.date}</span>
+                        <button class="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" data-id="${ticket.id}">
+                            View Details
+                        </button>
+                    </div>
+                `;
+                
+                ticketList.appendChild(ticketElement);
+            });
+        }
+
+        function submitTicket(e) {
+            e.preventDefault();
+            
+            const newTicket = {
+                id: Date.now(),
+                subject: ticketSubject.value,
+                description: ticketDescription.value,
+                status: 'open',
+                date: new Date().toLocaleDateString()
+            };
+            
+            currentUser.tickets.push(newTicket);
+            renderTickets();
+            ticketForm.reset();
+            
+            showNotification('Ticket submitted successfully');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg flex items-center dark:bg-gray-700';
+            notification.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize theme from localStorage
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+            sunIcon.classList.add('hidden');
+            moonIcon.classList.remove('hidden');
+        } else {
+            document.documentElement.classList.remove('dark');
+            moonIcon.classList.add('hidden');
+            sunIcon.classList.remove('hidden');
+        }
+
+        // Disable biometric button initially
+        biometricAuthBtn.disabled = true;
+        biometricAuthBtn.classList.add('opacity-50');
+    </script>
+</body>
+</html>
